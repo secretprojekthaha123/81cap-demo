@@ -477,3 +477,12 @@ body.has-sticky { padding-bottom: 72px; }
 
 #p-81cap .fire-hero img { aspect-ratio: 16 / 10; object-fit: cover; }
 @media (max-width: 719px) { #p-81cap .fire-hero img { aspect-ratio: 4 / 3; } }
+
+/* ---------- funding logos in the footer ---------- */
+.funding-block { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 20px; align-items: center; margin-top: 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+@media (min-width: 720px) { .funding-block { grid-template-columns: auto 1fr; gap: 32px; } }
+.funding-logos { background: #FFF100; border-radius: 12px; padding: 14px 18px; width: max-content; max-width: 100%; }
+.funding-logos img { display: block; width: 190px; height: auto; }
+.funding { margin: 0; }
+
+@media (min-width: 900px) { .funding-block .funding { grid-column: auto; } }
