@@ -51,3 +51,39 @@ Pred objavo:
 | `81-logo-white.svg`, `81-logo.svg` | logotip s 81cap.com (bel za glavo/nogo, rumen za favicon) |
 
 Rumena barva znamke: `#FFF000` (iz barvne sheme teme 81cap.com).
+
+## Različica 2 (26. 10. 2026) – tri družine izdelkov
+
+Stran zdaj predstavlja 81 CAP, FIRE CAP in 81X360 z vodnikom Male/Female, primerjalno tabelo in tremi nakupnimi razdelki. Vsi podatki so z 81cap.com (produktne strani, /products/*.js, About).
+
+### Fotografije (`media/products/`)
+
+| Datoteka | Vir (Shopify CDN) | Pomen |
+|---|---|---|
+| `81cap-male.webp`, `81cap-male-base.webp` | 81cap-1680437.jpg | 81 CAP MALE: spodnja stran s stebelcem (pin) |
+| `81cap-female.webp`, `81cap-female-base.webp` | 81cap-5124933.jpg | 81 CAP FEMALE: spodnja stran z luknjo (socket) |
+| `81cap-male-5/10/20.webp` | 81cap-7690552 / 5929180 / 6204645 | pakiranja MALE (na fotografijah spodnje strani s stebelcem) |
+| `81cap-female-5/10/20.webp` | 81cap-2197846 / 6861201 / 9733946 | pakiranja FEMALE (spodnje strani z luknjo) |
+| `firecap-three-views.webp`, `firecap-side.webp`, `firecap-angled.webp` | 81cap-7994253 / 8015388 / 3093950 | FIRE CAP (trgovina fotografira Female izvedbo z luknjo) |
+| `firecap-10/20/50.webp` | 81cap-8482206 / 1705889 / 3719574 | pakiranja FIRE CAP (ista fotografija za Male in Female) |
+| `x360-male-base.webp`, `x360-female-base.webp` | 81cap-3594354 / 3835375 | 81X360 spodnja stran: stebelce / luknja |
+| `x360-frame-up/45r/90l.webp` | 81cap-8115339 / 8405589 / 9677460 | 81X360 z nastavkom v treh polozajih |
+| `x360-body.webp`, `x360-rotor.webp` | sestavljeno iz 8115339 (+ 9677460, 8405589 za zapolnitev) | plasti za animacijo: telo brez nastavka in vrtljivi del (disk + nastavek) |
+
+Dodelitev MALE/FEMALE: ime pove prikljucek capa. MALE = stebelce, za plocevinke z zenskim ventilom (400-600 ml); FEMALE = luknja, za ULTRA WIDE, MAD MAXX, BOOSTER (moski ventil). Fotografije sem dodelil po vidnem stebelcu oziroma luknji, ker Shopify varianta nima lastne slike.
+
+### Animacija 81X360
+
+`app.js` vrti `x360-rotor.webp` okrog sredisca diska (`transform-origin: 49.53% 35.8%`), telo `x360-body.webp` miruje. Samodejni zamah -90..+90 stopinj z umirjanjem na koncih; drsnik prevzame nadzor, zamah se nadaljuje po 4 s. Pri `prefers-reduced-motion` je samo drsnik. Zasuk je 2D okrog osi diska; perspektiva nastavka pri skrajnih kotih se zato rahlo razlikuje od pravih fotografij (9677460, 8405589), ki so prikazane poleg.
+
+### Neskladja na izvirnih straneh (nisem jih resil z ugibanjem)
+
+- About: 81 FEMALE "1,62x faster / 1,42x more surface" v opisu, v tabeli testov pa "2,25x / 1,47x" (iz 29 s : 47 s in 5,3 : 3,6 m2 sledi 1,62x in 1,47x). Na strani so zato za Female samo surovi casi in povrsine, brez mnozitelja.
+- About: "4,13 times faster" pri 400 ml, iz 26 s : 112 s sledi 4,31x. Naslov na strani ohranja navedbo proizvajalca 4,13x, poleg so surovi casi.
+- FIRE CAP opis pravi "for all cans with female valves (MADMAXX, ULTRA WIDE, ...)", stran 81 CAP pa iste plocevinke uvrsca k FEMALE capu (moski ventil). Na strani FIRE CAP so navedene plocevinke iz opisa brez trditve o ventilu.
+- Manjka: fotografija spodnje strani FIRE CAP Male; pakiranja FIRE CAP imajo isto fotografijo za oba prikljucka.
+- Dostava: cene so objavljene samo za pakiranja 81 CAP (5/10/20).
+
+### Nakupne povezave
+
+18 variant (6 na izdelek), vse preverjene 26. 10. 2026 (302 -> Shopify checkout). ID-ji so v `app.js` (`PRODUCTS`).

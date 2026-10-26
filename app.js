@@ -148,34 +148,149 @@
   }
 
   /* ---------------------------------------------------------------------
-     4. Variant picker → Shopify cart permalink
+     4. Variant pickers -> Shopify cart permalinks
         https://www.81cap.com/cart/{VARIANT_ID}:{QUANTITY}
-        IDs from https://www.81cap.com/products/81-cap.js (checked 2026-10-26)
+        IDs and prices from /products/{handle}.js (checked 2026-10-26)
      --------------------------------------------------------------------- */
   var SHOP = 'https://www.81cap.com';
-  var VARIANTS = {
-    male:   { 5: { id: '48320506003788', price: 9.75 }, 10: { id: '48320506036556', price: 19.50 }, 20: { id: '48320506069324', price: 39.00 } },
-    female: { 5: { id: '48320506102092', price: 9.75 }, 10: { id: '48320506134860', price: 19.50 }, 20: { id: '48320506167628', price: 39.00 } }
+  var PRODUCTS = {
+    '81cap': {
+      name: '81 CAP',
+      variants: {
+        male:   { 5: { id: '48320506003788', price: 9.75 }, 10: { id: '48320506036556', price: 19.50 }, 20: { id: '48320506069324', price: 39.00 } },
+        female: { 5: { id: '48320506102092', price: 9.75 }, 10: { id: '48320506134860', price: 19.50 }, 20: { id: '48320506167628', price: 39.00 } }
+      },
+      photo: function (type, qty) {
+        return {
+          main: 'media/products/81cap-' + type + '.webp',
+          mainAlt: '81 CAP ' + type.toUpperCase() + ': one cap standing, one showing the ' + (type === 'male' ? 'pin' : 'socket') + ' on the underside',
+          pack: 'media/products/81cap-' + type + '-' + qty + '.webp',
+          packAlt: 'Pack of ' + qty + ' x 81 CAP ' + type.toUpperCase(),
+          caption: '81 CAP ' + type.toUpperCase() + ' · pack of ' + qty
+        };
+      }
+    },
+    'firecap': {
+      name: 'FIRE CAP',
+      variants: {
+        female: { 10: { id: '52896573292876', price: 10 }, 20: { id: '52896573325644', price: 20 }, 50: { id: '52896573358412', price: 50 } },
+        male:   { 10: { id: '58931544195404', price: 10 }, 20: { id: '58931544228172', price: 20 }, 50: { id: '58931544260940', price: 50 } }
+      },
+      photo: function (type, qty) {
+        return {
+          main: 'media/products/firecap-' + qty + '.webp',
+          mainAlt: 'Pack of ' + qty + ' FIRE CAPs',
+          caption: 'FIRE CAP ' + type.toUpperCase() + ' · pack of ' + qty
+        };
+      }
+    },
+    'x360': {
+      name: '81X360°',
+      variants: {
+        female: { 5: { id: '58931320586572', price: 15 }, 10: { id: '58931320619340', price: 30 }, 20: { id: '58931320652108', price: 60 } },
+        male:   { 5: { id: '58931378585932', price: 15 }, 10: { id: '58931378618700', price: 30 }, 20: { id: '58931378651468', price: 60 } }
+      },
+      photo: function (type, qty) {
+        return {
+          main: 'media/products/x360-' + type + '-base.webp',
+          mainAlt: '81X360° ' + type.toUpperCase() + ': underside with the ' + (type === 'male' ? 'pin' : 'socket'),
+          caption: '81X360° ' + type.toUpperCase() + ' · ' + (type === 'male' ? 'pin' : 'socket') + ' · pack of ' + qty
+        };
+      }
+    }
   };
-  var picker = document.getElementById('picker');
-  var addBtn = document.getElementById('addToCart');
-  var priceEl = document.getElementById('cartPrice');
-  var summaryEl = document.getElementById('cartSummary');
 
   function fmt(n) { return '€' + n.toFixed(2); }
 
-  function updateCart() {
-    var type = picker.querySelector('input[name="type"]:checked').value;
-    var qty = picker.querySelector('input[name="qty"]:checked').value;
-    var v = VARIANTS[type][qty];
-    addBtn.href = SHOP + '/cart/' + v.id + ':1';
-    addBtn.setAttribute('data-variant', v.id);
-    priceEl.textContent = fmt(v.price);
-    summaryEl.textContent = qty + '× 81 ' + type.toUpperCase();
+  function setupPicker(form) {
+    var key = form.getAttribute('data-product');
+    var P = PRODUCTS[key];
+    var photoBox = document.getElementById('photo-' + key);
+    var addBtn = form.querySelector('[data-role="add"]');
+    var priceEl = form.querySelector('[data-role="price"]');
+    var summaryEl = form.querySelector('[data-role="summary"]');
+    var imgMain = photoBox ? photoBox.querySelector('img[data-role="main"]') : null;
+    var imgPack = photoBox ? photoBox.querySelector('img[data-role="pack"]') : null;
+    var capEl = photoBox ? photoBox.querySelector('[data-role="caption"]') : null;
+
+    function update() {
+      var type = form.querySelector('input[name="type"]:checked').value;
+      var qty = form.querySelector('input[name="qty"]:checked').value;
+      var v = P.variants[type][qty];
+      addBtn.href = SHOP + '/cart/' + v.id + ':1';
+      addBtn.setAttribute('data-variant', v.id);
+      priceEl.textContent = fmt(v.price);
+      summaryEl.textContent = qty + '× ' + P.name + ' ' + type.toUpperCase();
+      if (photoBox) {
+        var ph = P.photo(type, qty);
+        var changed = (imgMain && imgMain.getAttribute('src') !== ph.main) || (imgPack && imgPack.getAttribute('src') !== ph.pack);
+        if (changed && !reduceMotion) photoBox.classList.add('is-swapping');
+        setTimeout(function () {
+          if (imgMain) { imgMain.src = ph.main; imgMain.alt = ph.mainAlt; }
+          if (imgPack && ph.pack) { imgPack.src = ph.pack; imgPack.alt = ph.packAlt; }
+          if (capEl) capEl.textContent = ph.caption;
+          photoBox.classList.remove('is-swapping');
+        }, changed && !reduceMotion ? 180 : 0);
+      }
+    }
+    form.addEventListener('change', update);
+    update();
   }
-  if (picker) {
-    picker.addEventListener('change', updateCart);
-    updateCart();
+  document.querySelectorAll('form.picker[data-product]').forEach(setupPicker);
+
+  /* ---------------------------------------------------------------------
+     4b. 81X360 - the top part (disc + nozzle) turns around the disc centre,
+         the body stays fixed. Auto sweep -90 .. +90 deg; the slider takes
+         over while the visitor drags it, the sweep resumes after 4 s.
+     --------------------------------------------------------------------- */
+  var rotor = document.getElementById('x360Rotor');
+  var slider = document.getElementById('x360Angle');
+  var degEl = document.getElementById('x360Deg');
+  var stage = document.getElementById('x360Stage');
+  if (rotor && slider) {
+    var angle = 0, target = 0, userUntil = 0, visible = true, dir = 1, holdUntil = 0, autoPhase = 0;
+    var SWEEP = 3200;          // ms for one full -90 -> +90 sweep
+    var HOLD = 900;            // ms pause at the ends
+    var last = performance.now();
+    function setAngle(a) {
+      angle = a;
+      rotor.style.transform = 'rotate(' + a + 'deg)';   // positive = nozzle to the right (clockwise on screen)
+      degEl.textContent = Math.round(a) + '°';
+    }
+    function easeInOut(t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+    function frame(now) {
+      var dt = Math.min(50, now - last); last = now;
+      if (visible) {
+        if (now < userUntil || reduceMotion) {
+          target = Number(slider.value);
+          setAngle(angle + (target - angle) * Math.min(1, dt / 90));
+        } else if (now >= holdUntil) {
+          autoPhase += dt / SWEEP;
+          if (autoPhase >= 1) { autoPhase = 0; dir = -dir; holdUntil = now + HOLD; }
+          var p = easeInOut(Math.min(1, autoPhase));
+          var a = dir > 0 ? -90 + 180 * p : 90 - 180 * p;
+          setAngle(a);
+          slider.value = Math.round(a);
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    function userTouch() {
+      // resume the sweep from the slider position, not from -90
+      userUntil = performance.now() + 4000;
+      var a = Number(slider.value);
+      dir = a >= 0 ? -1 : 1;
+      autoPhase = dir > 0 ? (a + 90) / 180 : (90 - a) / 180;
+    }
+    slider.addEventListener('input', userTouch);
+    slider.addEventListener('pointerdown', userTouch);
+    slider.addEventListener('keydown', userTouch);
+    if (reduceMotion) { slider.value = 0; setAngle(0); userUntil = Infinity; }
+    if ('IntersectionObserver' in window && stage) {
+      new IntersectionObserver(function (en) { visible = en[0].isIntersecting; last = performance.now(); }, { threshold: 0.05 }).observe(stage);
+    }
+    autoPhase = 0.5; dir = 1;   // start at 0 deg moving right
+    requestAnimationFrame(frame);
   }
 
   /* ---------------------------------------------------------------------
@@ -183,15 +298,21 @@
      --------------------------------------------------------------------- */
   var sticky = document.getElementById('stickyBar');
   var hero = document.getElementById('hero');
-  var buy = document.getElementById('buy');
-  if (sticky && hero && buy && 'IntersectionObserver' in window) {
-    var heroVisible = true, buyVisible = false;
+  var buys = document.querySelectorAll('.buy');
+  if (sticky && hero && buys.length && 'IntersectionObserver' in window) {
+    var heroVisible = true, buyVisible = false, buyState = {};
     function updateSticky() {
       var show = !heroVisible && !buyVisible;
       sticky.classList.toggle('is-visible', show);
       document.body.classList.toggle('has-sticky', show);
     }
     new IntersectionObserver(function (en) { heroVisible = en[0].isIntersecting; updateSticky(); }, { threshold: 0.1 }).observe(hero);
-    new IntersectionObserver(function (en) { buyVisible = en[0].isIntersecting; updateSticky(); }, { threshold: 0.1 }).observe(buy);
+    buys.forEach(function (b, i) {
+      new IntersectionObserver(function (en) {
+        buyState[i] = en[0].isIntersecting;
+        buyVisible = Object.keys(buyState).some(function (k) { return buyState[k]; });
+        updateSticky();
+      }, { threshold: 0.1 }).observe(b);
+    });
   }
 })();
