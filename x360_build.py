@@ -40,21 +40,29 @@ F=(ndi.binary_dilation(noz,iterations=6)|spike)&body_sil&(~inner)&(yy<cy-20)
 Fd=ndi.binary_dilation(F,iterations=3)
 G=body.copy(); ang=np.deg2rad(62)
 ys,xs=np.where(Fd); ddx=xs-cx; ddy=ys-cy; a=np.where(xs>=cx,ang,-ang)
-sx=np.clip(np.round(cx+ddx*np.cos(a)-ddy*np.sin(a)).astype(int),0,W-1); sy=np.clip(np.round(cy+ddx*np.sin(a)+ddy*np.cos(a)).astype(int),0,H-1)
+k_el=178.5/174.5   # the ring is a slight ellipse (wider than tall): rotate in normalised space
+ddy_n=ddy*k_el
+sx=np.clip(np.round(cx+ddx*np.cos(a)-ddy_n*np.sin(a)).astype(int),0,W-1); sy=np.clip(np.round(cy+(ddx*np.sin(a)+ddy_n*np.cos(a))/k_el).astype(int),0,H-1)
 G[ys,xs]=body[sy,sx]
-ringpix=F&(d<=R_OUT+2); body[ringpix]=G[ringpix]
-R=F&(d>R_OUT+2)
+R=F
 idx=-np.ones((H,W),int); ry,rx=np.where(R); idx[ry,rx]=np.arange(len(ry)); N=len(ry)
 rows=[];cols=[];vals=[]; b=np.zeros((N,3))
 for k,(y,x) in enumerate(zip(ry,rx)):
-    rows.append(k);cols.append(k);vals.append(4.0)
+    deg=0
     for ny,nx in ((y-1,x),(y+1,x),(y,x-1),(y,x+1)):
+        if inner[ny,nx]: continue            # no constraint from the dome (covered by the rotor)
+        deg+=1
         b[k]+=G[y,x,:3]-G[ny,nx,:3]; j=idx[ny,nx]
         if j>=0: rows.append(k);cols.append(j);vals.append(-1.0)
         else: b[k]+=body[ny,nx,:3]
+    rows.append(k);cols.append(k);vals.append(float(deg))
 Amat=sparse.csr_matrix((vals,(rows,cols)),shape=(N,N))
 for c in range(3): body[ry,rx,c]=np.clip(spsolve(Amat,b[:,c]),0,255)
 body[ry,rx,3]=255
+# soften the seam where the two sampled halves meet on the ring top
+bu=body.astype(np.uint8); bl=np.asarray(Image.fromarray(bu,'RGBA').filter(ImageFilter.GaussianBlur(1.6)))
+seam=F&(np.abs(dx)<26)&(d>R_IN-3)&(d<R_OUT+10)
+bu[seam]=bl[seam]; body=bu.astype(float)
 bodyim=Image.fromarray(body.astype(np.uint8),'RGBA')
 box=(140,70,1000,1070); bw=box[2]-box[0]; bh=box[3]-box[1]
 for im,name in [(bodyim.crop(box),'x360-body'),(rotorim.crop(box),'x360-rotor')]:
