@@ -28,7 +28,11 @@ for i in range(1,n+1):
     if (c&A).sum()>200: keep|=c
 noz=ndi.binary_dilation(keep,iterations=1)
 print('nozzle px', int(noz.sum()))
-mask=(inner|noz).astype(np.uint8)*255
+# close the gap between the mouth and the disc so the rotor is one solid shape (mouth - tube - disc)
+rr_=16; yk,xk=np.mgrid[-rr_:rr_+1,-rr_:rr_+1]; disk=(xk*xk+yk*yk)<=rr_*rr_
+rotmask=ndi.binary_fill_holes(ndi.binary_closing(inner|noz, structure=disk))
+rotmask=ndi.binary_closing(rotmask, structure=np.ones((7,7)))
+mask=rotmask.astype(np.uint8)*255
 m=Image.fromarray(mask).filter(ImageFilter.GaussianBlur(0.8))
 ra8=upa.astype(np.uint8).copy(); ra8[:,:,3]=(ra8[:,:,3].astype(int)*np.asarray(m).astype(int)//255).astype(np.uint8)
 rotorim=Image.fromarray(ra8,'RGBA')
@@ -36,7 +40,7 @@ rotorim=Image.fromarray(ra8,'RGBA')
 body=upa.copy().astype(float)
 body[ndi.binary_dilation(A,iterations=2)&(~body_sil)]=[0,0,0,0]
 spike=(np.abs(dx)<34)&(yy>=185)
-F=(ndi.binary_dilation(noz,iterations=6)|spike)&body_sil&(~inner)&(yy<cy-20)
+F=(ndi.binary_dilation(rotmask,iterations=6)|spike)&body_sil&(~inner)&(yy<cy-20)
 Fd=ndi.binary_dilation(F,iterations=3)
 G=body.copy(); ang=np.deg2rad(62)
 ys,xs=np.where(Fd); ddx=xs-cx; ddy=ys-cy; a=np.where(xs>=cx,ang,-ang)
