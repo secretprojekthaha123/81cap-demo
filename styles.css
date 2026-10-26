@@ -486,3 +486,6 @@ body.has-sticky { padding-bottom: 72px; }
 .funding { margin: 0; }
 
 @media (min-width: 900px) { .funding-block .funding { grid-column: auto; } }
+
+.funding-logos { background: none; padding: 0; }
+.funding-logos img { width: 200px; }
