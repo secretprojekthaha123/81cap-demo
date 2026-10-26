@@ -474,3 +474,6 @@ body.has-sticky { padding-bottom: 72px; }
 @media (max-width: 719px) { .family-grid-rich .family-card { grid-template-columns: 112px minmax(0, 1fr); } }
 
 @media (min-width: 900px) { .site-nav { order: 1; } .header-actions { order: 2; } }
+
+#p-81cap .fire-hero img { aspect-ratio: 16 / 10; object-fit: cover; }
+@media (max-width: 719px) { #p-81cap .fire-hero img { aspect-ratio: 4 / 3; } }
