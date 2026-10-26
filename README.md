@@ -87,3 +87,10 @@ Dodelitev MALE/FEMALE: ime pove prikljucek capa. MALE = stebelce, za plocevinke 
 ### Nakupne povezave
 
 18 variant (6 na izdelek), vse preverjene 26. 10. 2026 (302 -> Shopify checkout). ID-ji so v `app.js` (`PRODUCTS`).
+
+## Različica 3 – naslovna stran + ločene produktne strani
+
+- `index.html`: video, pregled treh capov z osnovnimi lastnostmi in gumbom "Details & buy", vodnik Male/Female, primerjalna tabela, FAQ.
+- `81cap.html`, `firecap.html`, `x360.html`: podrobnosti, fotografije, izbira priključka in količine, nakupni gumb. Na telefonu je spodaj pripet gumb "Add to cart" s trenutno izbrano varianto in ceno.
+- Navigacija: na telefonu vrstica z zavihki pod glavo, na namizju v glavi.
+- Posamezne datoteke so povezane relativno, zato stran deluje v vsaki podmapi (GitHub Pages, Netlify).

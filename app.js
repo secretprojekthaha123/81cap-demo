@@ -50,7 +50,7 @@
   }
 
   function setFeature(i, animate) {
-    if (i === activeIndex) return;
+    if (!features.length || i === activeIndex) return;
     activeIndex = i;
     features.forEach(function (f, k) { f.classList.toggle('is-active', k === i); });
     dots.forEach(function (d, k) { d.classList.toggle('is-active', k === i); });
@@ -221,6 +221,10 @@
       addBtn.setAttribute('data-variant', v.id);
       priceEl.textContent = fmt(v.price);
       summaryEl.textContent = qty + '× ' + P.name + ' ' + type.toUpperCase();
+      var stickyAdd = document.querySelector('[data-role="sticky-add"]');
+      var stickySum = document.querySelector('[data-role="sticky-summary"]');
+      if (stickyAdd) { stickyAdd.href = addBtn.href; stickyAdd.textContent = 'Add to cart — ' + fmt(v.price); }
+      if (stickySum) { stickySum.textContent = P.name + ' ' + type.toUpperCase() + ' · ' + qty + ' caps'; }
       if (photoBox) {
         var ph = P.photo(type, qty);
         var changed = (imgMain && imgMain.getAttribute('src') !== ph.main) || (imgPack && imgPack.getAttribute('src') !== ph.pack);
@@ -299,14 +303,14 @@
   var sticky = document.getElementById('stickyBar');
   var hero = document.getElementById('hero');
   var buys = document.querySelectorAll('.buy');
-  if (sticky && hero && buys.length && 'IntersectionObserver' in window) {
-    var heroVisible = true, buyVisible = false, buyState = {};
+  if (sticky && 'IntersectionObserver' in window) {
+    var heroVisible = !!hero, buyVisible = false, buyState = {};
     function updateSticky() {
       var show = !heroVisible && !buyVisible;
       sticky.classList.toggle('is-visible', show);
       document.body.classList.toggle('has-sticky', show);
     }
-    new IntersectionObserver(function (en) { heroVisible = en[0].isIntersecting; updateSticky(); }, { threshold: 0.1 }).observe(hero);
+    if (hero) new IntersectionObserver(function (en) { heroVisible = en[0].isIntersecting; updateSticky(); }, { threshold: 0.1 }).observe(hero); else updateSticky();
     buys.forEach(function (b, i) {
       new IntersectionObserver(function (en) {
         buyState[i] = en[0].isIntersecting;
